@@ -21,5 +21,5 @@ jobs:
       - name: Import project
         run: godot --headless --path game --import
 
-      - name: Run smoke-test scene
-        run: timeout 30 godot --headless --path game --quit-after 2
+      - name: Run automated tests
+        run: godot --headless --path game --script res://tests/run_tests.gd

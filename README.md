@@ -10,16 +10,20 @@ jogo como referência de design. Veja o porquê em [`docs/ESCOPO.md`](docs/ESCOP
 
 ## Status
 
-🚧 **Fase 0 (Fundação) em andamento.** Estrutura inicial do projeto Godot, camada de simulação
-data-driven, licenças e CI já estão no repositório (`game/`). Ainda não há mapa, HUD ou loop de
-jogo jogável — isso é a Fase 1. Veja o checklist de progresso em
+🚧 **Fase 0 concluída / Fase 1 (MVP do loop central) em andamento.** O núcleo da simulação já
+funciona de ponta a ponta em texto (sem gráficos ainda): paciente entra na fila, é diagnosticado,
+tratado e recebe alta (ou falece, se não for atendido a tempo), com equipe alocada a salas e
+economia/reputação reagindo ao resultado. Falta a camada visual (câmera isométrica + grid de
+construção de salas) para o jogo deixar de ser só um log de console. Veja o checklist detalhado em
 [`docs/ESCOPO.md`](docs/ESCOPO.md#7-próximos-passos-imediatos-backlog-inicial).
 
-> **Nota de ambiente:** os arquivos do projeto Godot foram criados manualmente nesta sessão
-> porque o container de execução não tem o binário do Godot instalado nem acesso de rede para
-> baixá-lo. Eles seguem o formato de texto padrão do Godot 4, mas **ainda não foram abertos e
-> validados no editor real** — isso deve ser o primeiro passo de quem continuar o trabalho com
-> acesso ao Godot.
+> **Nota de ambiente:** os arquivos do projeto Godot (incluindo a lógica de simulação e os
+> testes automatizados) foram escritos manualmente nesta sessão porque o container de execução
+> não tem o binário do Godot instalado nem acesso de rede para baixá-lo. Eles seguem o formato
+> de texto padrão do Godot 4 e a sintaxe do GDScript 4, mas **ainda não foram executados em um
+> Godot real**. O primeiro passo de quem continuar o trabalho com acesso ao Godot deve ser
+> rodar `godot --headless --path game --script res://tests/run_tests.gd` e abrir o projeto no
+> editor para confirmar que tudo importa e roda sem erro.
 
 ## Documentação
 

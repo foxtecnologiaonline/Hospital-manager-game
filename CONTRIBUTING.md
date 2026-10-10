@@ -26,9 +26,22 @@ projeto **não pode** conter nomes, arte, áudio ou dados extraídos do jogo
   /src/platform       save system, carregamento de conteúdo, abstrações de plataforma
   /content            doenças, salas e cargos definidos em JSON
   /assets             arte, áudio, fontes (ver LICENSE-ASSETS.md)
-/tools                scripts de build e geração de conteúdo
-/tests                testes automatizados
+  /tests              testes automatizados em GDScript (precisam rodar dentro do
+                       projeto Godot — ver "Rodando os testes" abaixo)
+/tools                scripts de build e geração de conteúdo (fora do Godot)
 ```
+
+## Rodando os testes
+
+Os testes de simulação (`game/tests/run_tests.gd`) usam um executor headless
+próprio, sem dependências externas:
+
+```sh
+godot --headless --path game --script res://tests/run_tests.gd
+```
+
+Isso deve rodar sem janela gráfica e imprimir `OK` ou `FALHA` no console. O
+mesmo comando roda no CI (`.github/workflows/ci.yml`).
 
 ## Adicionando conteúdo (doenças, salas, cargos)
 

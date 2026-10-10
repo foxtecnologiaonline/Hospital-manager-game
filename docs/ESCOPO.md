@@ -161,8 +161,9 @@ orientado a dados**), estruturar em camadas:
     /platform         save system, input abstraction, plataformas
   /content            dados de doenças, salas, equipe, níveis (.tres/json)
   /assets             arte, áudio, fontes (originais ou licenciados)
-/tools                scripts de build, geração de conteúdo, CI
-/tests                testes automatizados da camada de simulação
+  /tests              testes automatizados da camada de simulação (GDScript; rodam dentro
+                       do projeto Godot via `godot --headless --script res://tests/...`)
+/tools                scripts de build, geração de conteúdo, CI (fora do Godot)
 ```
 
 ## 5. Roadmap faseado
@@ -196,19 +197,33 @@ orientado a dados**), estruturar em camadas:
    Godot instalado/acessível no container); precisam ser abertos no editor Godot 4.3+ para
    confirmar que importam e rodam sem erro, e o CI precisa de uma primeira execução real no
    GitHub Actions.
-3. ⬜ Prototipar a câmera isométrica + um grid de construção de salas (ainda não implementado —
-   `main.tscn` hoje só executa o tick de demonstração da simulação, sem renderização de mapa).
-4. ✅ (parcial) Entidade de Paciente com estado (fila → diagnóstico → tratamento → saída) e
-   doenças de exemplo — implementado em `game/src/simulation/patient.gd` e
-   `game/content/diseases.json`, mas a transição entre estágios ainda não está implementada
-   (fila é só um array; falta a lógica de avanço de estágio).
-5. ⬜ Implementar entidade de Equipe (1 tipo) operando 1 sala — `staff_role.gd` e
-   `staff_roles.json` definem o cargo como dado, mas falta a entidade de equipe em-jogo (análoga
-   a `Patient`) e a lógica de alocação sala/equipe.
-6. ⬜ Validar o loop em um único mapa de teste antes de expandir conteúdo.
+3. ⬜ Prototipar a câmera isométrica + um grid de construção de salas — **ainda não
+   implementado**. A simulação (itens 4–6) já funciona de ponta a ponta, mas sem nenhuma
+   renderização de mapa/HUD; `main.tscn` apenas aciona a simulação e imprime o progresso no
+   console (texto, sem gráficos).
+4. ✅ Entidade de Paciente com máquina de estados completa (fila → diagnóstico → tratamento →
+   alta/óbito) — implementada em `game/src/simulation/patient.gd` (enum `Stage`) e na lógica de
+   transição em `HospitalSimulation.tick()`.
+5. ✅ Entidade de Equipe (`game/src/simulation/staff_member.gd`) e de Sala construída
+   (`game/src/simulation/room.gd`), com alocação sala↔equipe que valida o cargo exigido
+   (`HospitalSimulation.assign_staff_to_room`).
+6. ✅ Loop validado com um cenário mínimo (2 salas, 2 membros de equipe, 1 doença) em
+   `game/src/presentation/main.gd` (demo manual) e em `game/tests/run_tests.gd` (testes
+   automatizados headless).
+   ⚠️ **Pendente de execução real:** os testes foram escritos e revisados manualmente nesta
+   sessão (sem o binário do Godot disponível no container para rodá-los); precisam ser
+   executados com `godot --headless --path game --script res://tests/run_tests.gd` na primeira
+   oportunidade, e o resultado real confirmado (o CI em `.github/workflows/ci.yml` já roda esse
+   comando a cada push).
 
-Itens 3, 4 (parte dinâmica) e 5 são o núcleo da **Fase 1 (MVP do loop central)** e ficam para a
-próxima etapa de trabalho.
+**Simplificações conhecidas do modelo de simulação atual** (documentadas para não serem
+confundidas com bugs): cada etapa de diagnóstico/tratamento dura exatamente 1 tick (sem duração
+variável), não há ainda posição/movimento real de pacientes e equipe no mapa (pathfinding),
+salário de equipe não é debitado por tick, e não há sistema de níveis/metas. Esses pontos
+pertencem à Fase 1 (continuação) e à Fase 2.
+
+Próximo passo recomendado: a câmera isométrica e o grid de construção (item 3), que é o que falta
+para o loop deixar de ser só console e se tornar visualmente jogável.
 
 ## 8. Referências consultadas
 

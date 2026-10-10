@@ -3,7 +3,7 @@ class_name Patient
 
 ## Instância de um paciente durante a simulação (não é conteúdo de dados).
 
-enum Stage { QUEUED, DIAGNOSIS, TREATMENT, DISCHARGED, DECEASED }
+enum Stage { QUEUED, DIAGNOSIS, AWAITING_TREATMENT, TREATMENT, DISCHARGED, DECEASED }
 
 var patient_id: int
 var disease_id: String
