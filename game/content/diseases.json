@@ -1,0 +1,26 @@
+[
+  {
+    "id": "static_hair",
+    "display_name": "Cabelo Estático",
+    "diagnosis_room_ids": ["general_checkup"],
+    "treatment_room_id": "static_discharge_room",
+    "base_cure_chance": 0.95,
+    "untreated_risk_per_tick": 0.01
+  },
+  {
+    "id": "numeric_vertigo",
+    "display_name": "Vertigem Numérica",
+    "diagnosis_room_ids": ["general_checkup", "deep_scan"],
+    "treatment_room_id": "calibration_room",
+    "base_cure_chance": 0.85,
+    "untreated_risk_per_tick": 0.02
+  },
+  {
+    "id": "chronic_giggles",
+    "display_name": "Risada Crônica",
+    "diagnosis_room_ids": ["general_checkup"],
+    "treatment_room_id": "quiet_room",
+    "base_cure_chance": 0.9,
+    "untreated_risk_per_tick": 0.015
+  }
+]

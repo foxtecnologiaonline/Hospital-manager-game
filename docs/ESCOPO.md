@@ -188,13 +188,27 @@ orientado a dados**), estruturar em camadas:
 
 ## 7. Próximos passos imediatos (backlog inicial)
 
-1. Decidir e documentar licença de código e de assets.
-2. Inicializar projeto Godot 4 com estrutura de pastas acima e pipeline de CI básico.
-3. Prototipar a câmera isométrica + um grid de construção de salas.
-4. Implementar entidade de Paciente com estado (fila → diagnóstico → tratamento → saída) e
-   uma doença de exemplo.
-5. Implementar entidade de Equipe (1 tipo) operando 1 sala.
-6. Validar o loop em um único mapa de teste antes de expandir conteúdo.
+1. ✅ Decidir e documentar licença de código e de assets (`LICENSE` — MIT,
+   `LICENSE-ASSETS.md` — CC BY-SA 4.0).
+2. ✅ Inicializar projeto Godot 4 com a estrutura de pastas da seção 4.3 e um workflow de CI
+   básico (`.github/workflows/ci.yml`).
+   ⚠️ **Pendente de validação real:** os arquivos foram escritos manualmente nesta sessão (sem
+   Godot instalado/acessível no container); precisam ser abertos no editor Godot 4.3+ para
+   confirmar que importam e rodam sem erro, e o CI precisa de uma primeira execução real no
+   GitHub Actions.
+3. ⬜ Prototipar a câmera isométrica + um grid de construção de salas (ainda não implementado —
+   `main.tscn` hoje só executa o tick de demonstração da simulação, sem renderização de mapa).
+4. ✅ (parcial) Entidade de Paciente com estado (fila → diagnóstico → tratamento → saída) e
+   doenças de exemplo — implementado em `game/src/simulation/patient.gd` e
+   `game/content/diseases.json`, mas a transição entre estágios ainda não está implementada
+   (fila é só um array; falta a lógica de avanço de estágio).
+5. ⬜ Implementar entidade de Equipe (1 tipo) operando 1 sala — `staff_role.gd` e
+   `staff_roles.json` definem o cargo como dado, mas falta a entidade de equipe em-jogo (análoga
+   a `Patient`) e a lógica de alocação sala/equipe.
+6. ⬜ Validar o loop em um único mapa de teste antes de expandir conteúdo.
+
+Itens 3, 4 (parte dinâmica) e 5 são o núcleo da **Fase 1 (MVP do loop central)** e ficam para a
+próxima etapa de trabalho.
 
 ## 8. Referências consultadas
 

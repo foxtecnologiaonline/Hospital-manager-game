@@ -10,8 +10,16 @@ jogo como referência de design. Veja o porquê em [`docs/ESCOPO.md`](docs/ESCOP
 
 ## Status
 
-🚧 Em fase de planejamento. Ainda não há código do jogo neste repositório — o primeiro passo é
-a Fase 0 (Fundação) descrita no roadmap abaixo.
+🚧 **Fase 0 (Fundação) em andamento.** Estrutura inicial do projeto Godot, camada de simulação
+data-driven, licenças e CI já estão no repositório (`game/`). Ainda não há mapa, HUD ou loop de
+jogo jogável — isso é a Fase 1. Veja o checklist de progresso em
+[`docs/ESCOPO.md`](docs/ESCOPO.md#7-próximos-passos-imediatos-backlog-inicial).
+
+> **Nota de ambiente:** os arquivos do projeto Godot foram criados manualmente nesta sessão
+> porque o container de execução não tem o binário do Godot instalado nem acesso de rede para
+> baixá-lo. Eles seguem o formato de texto padrão do Godot 4, mas **ainda não foram abertos e
+> validados no editor real** — isso deve ser o primeiro passo de quem continuar o trabalho com
+> acesso ao Godot.
 
 ## Documentação
 

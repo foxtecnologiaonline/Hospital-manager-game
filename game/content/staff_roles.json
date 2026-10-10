@@ -1,0 +1,6 @@
+[
+  { "id": "doctor", "display_name": "Médico", "base_salary": 1200, "base_skill": 0.6 },
+  { "id": "nurse", "display_name": "Enfermeira", "base_salary": 800, "base_skill": 0.55 },
+  { "id": "handyman", "display_name": "Zelador", "base_salary": 600, "base_skill": 0.5 },
+  { "id": "receptionist", "display_name": "Recepcionista", "base_salary": 500, "base_skill": 0.5 }
+]

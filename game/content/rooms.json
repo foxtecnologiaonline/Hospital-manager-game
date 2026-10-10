@@ -1,0 +1,50 @@
+[
+  {
+    "id": "general_checkup",
+    "display_name": "Consulta Geral",
+    "category": "diagnosis",
+    "min_size": [4, 4],
+    "required_staff_role": "doctor",
+    "cost": 3000
+  },
+  {
+    "id": "deep_scan",
+    "display_name": "Escaneamento Profundo",
+    "category": "diagnosis",
+    "min_size": [5, 5],
+    "required_staff_role": "doctor",
+    "cost": 8000
+  },
+  {
+    "id": "static_discharge_room",
+    "display_name": "Sala de Descarga Estática",
+    "category": "treatment",
+    "min_size": [4, 4],
+    "required_staff_role": "nurse",
+    "cost": 5000
+  },
+  {
+    "id": "calibration_room",
+    "display_name": "Sala de Calibragem",
+    "category": "treatment",
+    "min_size": [5, 5],
+    "required_staff_role": "doctor",
+    "cost": 9000
+  },
+  {
+    "id": "quiet_room",
+    "display_name": "Sala do Silêncio",
+    "category": "treatment",
+    "min_size": [4, 4],
+    "required_staff_role": "nurse",
+    "cost": 4000
+  },
+  {
+    "id": "staff_lounge",
+    "display_name": "Sala de Descanso",
+    "category": "support",
+    "min_size": [4, 4],
+    "required_staff_role": "",
+    "cost": 2000
+  }
+]
