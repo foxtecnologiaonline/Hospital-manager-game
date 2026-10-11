@@ -9,6 +9,7 @@ func _init() -> void:
 	var failures := 0
 	failures += _test_patient_completes_full_cycle()
 	failures += _test_room_requires_matching_staff_role()
+	failures += _test_two_patients_contend_for_rooms()
 
 	if failures == 0:
 		print("OK — todos os testes passaram.")
@@ -93,4 +94,35 @@ func _test_room_requires_matching_staff_role() -> int:
 		print("  [FALHA] test_room_requires_matching_staff_role — sala não deveria estar com equipe")
 		return 1
 	print("  [OK] test_room_requires_matching_staff_role")
+	return 0
+
+## Garante que, com só 1 sala de diagnóstico e 1 de tratamento disponíveis,
+## dois pacientes simultâneos nunca ocupam a mesma sala ao mesmo tempo — eles
+## se alternam corretamente e ambos acabam curados.
+func _test_two_patients_contend_for_rooms() -> int:
+	var simulation := HospitalSimulation.new(_make_test_content())
+	var diag_room := simulation.add_room("test_diag", Vector2i(0, 0), Vector2i(3, 3))
+	var treat_room := simulation.add_room("test_treat", Vector2i(4, 0), Vector2i(3, 3))
+	var doctor1 := simulation.hire_staff("doctor")
+	var doctor2 := simulation.hire_staff("doctor")
+	simulation.assign_staff_to_room(doctor1.staff_id, diag_room.room_id)
+	simulation.assign_staff_to_room(doctor2.staff_id, treat_room.room_id)
+
+	var patient_a := simulation.spawn_patient("test_disease")
+	var patient_b := simulation.spawn_patient("test_disease")
+
+	var ticks := 0
+	var both_done := false
+	while not both_done and ticks < 10:
+		simulation.tick()
+		ticks += 1
+		both_done = (patient_a.stage == Patient.Stage.DISCHARGED or patient_a.stage == Patient.Stage.DECEASED) and (patient_b.stage == Patient.Stage.DISCHARGED or patient_b.stage == Patient.Stage.DECEASED)
+
+	if patient_a.stage != Patient.Stage.DISCHARGED or patient_b.stage != Patient.Stage.DISCHARGED:
+		print("  [FALHA] test_two_patients_contend_for_rooms — estágios finais: A=%s, B=%s (em %d ticks)" % [Patient.Stage.keys()[patient_a.stage], Patient.Stage.keys()[patient_b.stage], ticks])
+		return 1
+	if simulation.economy.cash != 50400:
+		print("  [FALHA] test_two_patients_contend_for_rooms — caixa final inesperado: %d (esperado 50400)" % simulation.economy.cash)
+		return 1
+	print("  [OK] test_two_patients_contend_for_rooms (%d ticks)" % ticks)
 	return 0

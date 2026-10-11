@@ -3,8 +3,10 @@ extends Node2D
 ## Cena de bootstrap da Fase 1 (MVP do loop central): monta um hospital
 ## mínimo (2 salas + 2 membros de equipe), gera um paciente e roda a
 ## simulação tick a tick até ele receber alta ou falecer, imprimindo o
-## progresso no console. Ainda não há renderização de mapa/HUD — isso
-## continua pendente (ver backlog em docs/ESCOPO.md).
+## progresso no console. O grid isométrico (nó "IsometricGrid") mostra as
+## salas construídas como placeholder visual — ainda não há sprites/tiles
+## reais nem construção interativa (clique para construir); isso continua
+## pendente (ver backlog em docs/ESCOPO.md).
 
 func _ready() -> void:
 	var content := ContentLoader.load_all()
@@ -22,6 +24,9 @@ func _ready() -> void:
 	simulation.assign_staff_to_room(nurse.staff_id, treatment_room.room_id)
 
 	var patient := simulation.spawn_patient("static_hair")
+
+	var grid: IsometricGrid = $IsometricGrid
+	grid.set_hospital_state(simulation.placed_rooms.values(), simulation.room_definitions)
 
 	print("Hospital Manager — demo da Fase 1 (fila -> diagnóstico -> tratamento -> alta):")
 	var tick_count := 0

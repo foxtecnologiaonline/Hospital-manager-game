@@ -10,11 +10,13 @@ jogo como referência de design. Veja o porquê em [`docs/ESCOPO.md`](docs/ESCOP
 
 ## Status
 
-🚧 **Fase 0 concluída / Fase 1 (MVP do loop central) em andamento.** O núcleo da simulação já
-funciona de ponta a ponta em texto (sem gráficos ainda): paciente entra na fila, é diagnosticado,
-tratado e recebe alta (ou falece, se não for atendido a tempo), com equipe alocada a salas e
-economia/reputação reagindo ao resultado. Falta a camada visual (câmera isométrica + grid de
-construção de salas) para o jogo deixar de ser só um log de console. Veja o checklist detalhado em
+🚧 **Fase 0 concluída / Fase 1 (MVP do loop central) funcionalmente completa.** O núcleo da
+simulação funciona de ponta a ponta: paciente entra na fila, é diagnosticado, tratado e recebe
+alta (ou falece, se não for atendido a tempo), com equipe alocada a salas, contenção entre
+pacientes simultâneos tratada corretamente, e economia/reputação reagindo ao resultado — tudo
+coberto por testes automatizados. Há também um placeholder visual (grid isométrico desenhado por
+código, sem sprites/arte própria ainda). **Ainda falta:** construção interativa de salas (clicar
+no grid) e qualquer arte real. Veja o checklist detalhado em
 [`docs/ESCOPO.md`](docs/ESCOPO.md#7-próximos-passos-imediatos-backlog-inicial).
 
 > **Nota de ambiente:** os arquivos do projeto Godot (incluindo a lógica de simulação e os
