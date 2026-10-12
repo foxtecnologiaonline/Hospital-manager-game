@@ -214,12 +214,14 @@ orientado a dados**), estruturar em camadas:
 5. ✅ Entidade de Equipe (`game/src/simulation/staff_member.gd`) e de Sala construída
    (`game/src/simulation/room.gd`), com alocação sala↔equipe que valida o cargo exigido
    (`HospitalSimulation.assign_staff_to_room`).
-6. ✅ Loop validado com quatro cenários automatizados em `game/tests/run_tests.gd`: ciclo
+6. ✅ Loop validado com seis cenários automatizados em `game/tests/run_tests.gd`: ciclo
    completo de 1 paciente, rejeição de cargo incompatível na alocação de equipe, contenção
    de 2 pacientes simultâneos por salas únicas (garante que nenhuma sala é ocupada por dois
-   pacientes ao mesmo tempo), e validação de posicionamento de sala (rejeita sobreposição e
-   posição fora do grid, aceita posição válida — base da construção interativa do item 3).
-   Também validado manualmente em `game/src/presentation/main.gd`.
+   pacientes ao mesmo tempo), validação de posicionamento de sala (rejeita sobreposição e
+   posição fora do grid, aceita posição válida — base da construção interativa do item 3),
+   zelador reduzindo o desgaste acumulado de uma sala, e recepcionista reduzindo à metade o
+   risco de piora de pacientes não atendidos. Também validado manualmente em
+   `game/src/presentation/main.gd`.
    ⚠️ **Pendente de execução real:** os testes foram escritos e revisados manualmente nesta
    sessão (sem o binário do Godot disponível no container para rodá-los); precisam ser
    executados com `godot --headless --path game --script res://tests/run_tests.gd` na primeira
@@ -237,10 +239,18 @@ variável), não há ainda posição/movimento real de pacientes e equipe no map
 salário de equipe não é debitado por tick, e não há sistema de níveis/metas. Esses pontos
 pertencem à Fase 1 (continuação) e à Fase 2.
 
+7. ✅ Zelador e recepcionista ganharam função real: zelador reduz o desgaste acumulado das
+   salas (sem manutenção, desgaste reduz a chance de cura em tratamentos — ver
+   `HospitalSimulation._room_wear_multiplier`); recepcionista reduz à metade o risco de piora
+   de pacientes não atendidos (`_apply_untreated_risk`). Ambos são efeitos globais (basta
+   contratar — não precisam de uma sala própria neste modelo simplificado) e já contratáveis
+   no protótipo pelas teclas E/R (médico/enfermeira por Q/W, mas sem alocação automática).
+
 **Próximo passo recomendado (Fase 2 — restante):**
-- UI gráfica mínima para contratar equipe e selecionar o tipo de sala (hoje é só teclado 1–6
-  e HUD de texto).
-- Zelador e recepcionista ganhando função real na simulação (hoje só existem como dados).
+- UI gráfica mínima para contratar equipe e selecionar o tipo de sala (hoje é só teclado
+  1–6/Q/W/E/R e HUD de texto).
+- Alocação de médico/enfermeira a salas pela interface (hoje só os 2 iniciais são alocados,
+  via código em `main.gd`).
 - Pesquisa, marketing e felicidade de equipe afetando desempenho.
 - Validar com um Godot real tudo o que foi construído até aqui (prioridade acima de
   qualquer item novo — a superfície de código não verificada só cresceu).

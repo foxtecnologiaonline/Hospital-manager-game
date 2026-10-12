@@ -16,9 +16,11 @@ for atendido a tempo), com equipe alocada a salas, contenção entre pacientes s
 corretamente, e economia/reputação reagindo ao resultado — tudo coberto por testes automatizados.
 O jogo já roda como um loop ao vivo (tick periódico + pacientes chegando sozinhos) e o jogador
 pode **construir salas de verdade**: tecla 1–6 escolhe o tipo, o grid isométrico mostra um
-destaque verde/vermelho sob o cursor, e clique esquerdo constrói. Ainda não há sprites/arte
-própria (é tudo desenhado por código) nem UI gráfica (só teclado + texto). Veja o checklist
-detalhado em [`docs/ESCOPO.md`](docs/ESCOPO.md#7-próximos-passos-imediatos-backlog-inicial).
+destaque verde/vermelho sob o cursor, e clique esquerdo constrói. Zelador e recepcionista
+(teclas E/R) já têm efeito real (reduzem desgaste de sala e risco de piora de pacientes,
+respectivamente). Ainda não há sprites/arte própria (é tudo desenhado por código) nem UI
+gráfica (só teclado + texto). Veja o checklist detalhado em
+[`docs/ESCOPO.md`](docs/ESCOPO.md#7-próximos-passos-imediatos-backlog-inicial).
 
 > **Nota de ambiente:** os arquivos do projeto Godot (incluindo a lógica de simulação e os
 > testes automatizados) foram escritos manualmente nesta sessão porque o container de execução

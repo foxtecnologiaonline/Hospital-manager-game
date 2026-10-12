@@ -16,5 +16,5 @@ script = ExtResource("2_grid")
 
 [node name="StatusLabel" type="Label" parent="HUD"]
 position = Vector2(16, 16)
-size = Vector2(520, 160)
+size = Vector2(560, 200)
 text = "Carregando..."

@@ -8,6 +8,10 @@ extends Node2D
 ## docs/ESCOPO.md): teclas 1–6 selecionam o tipo de sala a construir
 ## (na ordem definida em game/content/rooms.json); clique esquerdo constrói
 ## a sala selecionada na célula sob o cursor, se a posição for válida.
+## Teclas Q/W/E/R contratam médico/enfermeira/zelador/recepcionista — mas só
+## zelador e recepcionista têm efeito sem UI de alocação (são cargos
+## "globais" neste modelo simplificado; médico/enfermeira ainda precisam
+## ser alocados a uma sala por código, só os 2 iniciais o são).
 
 const TICK_INTERVAL: float = 1.0
 const PATIENT_SPAWN_INTERVAL: float = 4.0
@@ -78,6 +82,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			selected_room_definition_id = room_definition_order[index]
 			status_message = ""
 			_update_hover()
+		else:
+			_handle_hire_shortcut(event.keycode)
 	elif event is InputEventMouseMotion:
 		_update_hover()
 	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
@@ -106,6 +112,26 @@ func _try_build_at_mouse() -> void:
 	_update_hover()
 	_update_hud()
 
+func _handle_hire_shortcut(keycode: int) -> void:
+	var role_id := ""
+	match keycode:
+		KEY_Q:
+			role_id = "doctor"
+		KEY_W:
+			role_id = "nurse"
+		KEY_E:
+			role_id = "handyman"
+		KEY_R:
+			role_id = "receptionist"
+		_:
+			return
+	var role: StaffRole = simulation.staff_roles.get(role_id)
+	if role == null:
+		return
+	simulation.hire_staff(role_id)
+	status_message = "Contratado: %s." % role.display_name
+	_update_hud()
+
 func _spawn_random_patient() -> void:
 	var disease_ids := simulation.diseases.keys()
 	if disease_ids.is_empty():
@@ -123,14 +149,22 @@ func _count_active_patients() -> int:
 			count += 1
 	return count
 
+func _count_staff_with_role(role_id: String) -> int:
+	var count := 0
+	for staff in simulation.staff_members.values():
+		if staff.role_id == role_id:
+			count += 1
+	return count
+
 func _update_hud() -> void:
 	var definition: RoomDefinition = simulation.room_definitions.get(selected_room_definition_id)
 	var lines := [
 		"Hospital Manager — prototipo (Fase 2)",
 		"Caixa: %d | Reputação: %.2f" % [simulation.economy.cash, simulation.economy.reputation],
 		"Pacientes ativos: %d" % _count_active_patients(),
+		"Equipe — zeladores: %d | recepcionistas: %d" % [_count_staff_with_role("handyman"), _count_staff_with_role("receptionist")],
 		"Sala selecionada [1-%d]: %s (custo %d)" % [room_definition_order.size(), definition.display_name if definition else "?", definition.cost if definition else 0],
-		"Clique no grid para construir.",
+		"Clique no grid para construir. Q/W/E/R contrata médico/enfermeira/zelador/recepcionista.",
 	]
 	if status_message != "":
 		lines.append(status_message)

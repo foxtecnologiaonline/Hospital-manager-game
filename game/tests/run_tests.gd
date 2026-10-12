@@ -11,6 +11,8 @@ func _init() -> void:
 	failures += _test_room_requires_matching_staff_role()
 	failures += _test_two_patients_contend_for_rooms()
 	failures += _test_room_placement_validation()
+	failures += _test_handyman_reduces_room_wear()
+	failures += _test_receptionist_halves_untreated_risk()
 
 	if failures == 0:
 		print("OK — todos os testes passaram.")
@@ -155,4 +157,51 @@ func _test_room_placement_validation() -> int:
 		return 1
 
 	print("  [OK] test_room_placement_validation")
+	return 0
+
+## Garante que o desgaste de uma sala só diminui quando há um zelador
+## contratado (efeito global, sem precisar de alocação a uma sala).
+func _test_handyman_reduces_room_wear() -> int:
+	var simulation := HospitalSimulation.new(_make_test_content())
+	var room := simulation.add_room("test_treat", Vector2i(0, 0), Vector2i(3, 3))
+	room.wear = 5.0
+
+	simulation.tick()
+	if not is_equal_approx(room.wear, 5.0):
+		print("  [FALHA] test_handyman_reduces_room_wear — desgaste mudou sem zelador contratado (%.2f)" % room.wear)
+		return 1
+
+	simulation.hire_staff("handyman")
+	simulation.tick()
+	if not is_equal_approx(room.wear, 4.0):
+		print("  [FALHA] test_handyman_reduces_room_wear — esperado 4.0 após manutenção, obtido %.2f" % room.wear)
+		return 1
+
+	print("  [OK] test_handyman_reduces_room_wear")
+	return 0
+
+## Garante que uma recepcionista contratada reduz à metade o risco de
+## piora de pacientes que ainda não foram atendidos.
+func _test_receptionist_halves_untreated_risk() -> int:
+	var simulation := HospitalSimulation.new(_make_test_content())
+	var disease: Disease = simulation.diseases["test_disease"]
+	disease.untreated_risk_per_tick = 0.1
+	# Sem nenhuma sala construída, o paciente fica preso em QUEUED —
+	# isso isola o efeito do risco por falta de atendimento.
+	var patient := simulation.spawn_patient("test_disease")
+
+	simulation.tick()
+	var health_before_receptionist := patient.health
+	if not is_equal_approx(health_before_receptionist, 0.9):
+		print("  [FALHA] test_receptionist_halves_untreated_risk — saúde esperada 0.90 sem recepcionista, obtida %.3f" % health_before_receptionist)
+		return 1
+
+	simulation.hire_staff("receptionist")
+	simulation.tick()
+	var drop_with_receptionist := health_before_receptionist - patient.health
+	if not is_equal_approx(drop_with_receptionist, 0.05):
+		print("  [FALHA] test_receptionist_halves_untreated_risk — queda esperada 0.05 com recepcionista, obtida %.3f" % drop_with_receptionist)
+		return 1
+
+	print("  [OK] test_receptionist_halves_untreated_risk")
 	return 0

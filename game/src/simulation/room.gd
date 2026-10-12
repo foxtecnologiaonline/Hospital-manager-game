@@ -13,6 +13,11 @@ var size: Vector2i
 var assigned_staff_id: int = -1
 var occupant_patient_id: int = -1
 
+## Desgaste acumulado por uso (sem manutenção, reduz a chance de cura em
+## tratamentos — ver HospitalSimulation._resolve_treatment). Zelados por um
+## zelador contratado, independente de sala (ver _apply_handyman_maintenance).
+var wear: float = 0.0
+
 func _init(p_room_id: String, p_definition_id: String, p_position: Vector2i, p_size: Vector2i) -> void:
 	room_id = p_room_id
 	definition_id = p_definition_id

@@ -28,6 +28,16 @@ var _next_room_id: int = 1
 var _next_staff_id: int = 1
 var _next_patient_id: int = 1
 
+# Parâmetros do desgaste de sala (ver _resolve_treatment e
+# _apply_handyman_maintenance). "Usos livres" evita que o desgaste afete a
+# primeira sessão de uso de uma sala nova — só degrada com uso sustentado
+# sem manutenção.
+const ROOM_WEAR_FREE_USES: float = 2.0
+const ROOM_WEAR_PENALTY_PER_USE: float = 0.1
+const ROOM_WEAR_MIN_MULTIPLIER: float = 0.5
+const HANDYMAN_WEAR_REDUCTION_PER_TICK: float = 1.0
+const RECEPTIONIST_RISK_MULTIPLIER: float = 0.5
+
 func _init(content: Dictionary) -> void:
 	for entry in content.get("diseases", []):
 		var disease := Disease.from_dict(entry)
@@ -117,12 +127,31 @@ func spawn_patient(disease_id: String) -> Patient:
 	return patient
 
 ## Avança a simulação em um passo discreto: libera salas cujo atendimento
-## terminou, tenta alocar pacientes em espera a salas livres e aplica o
-## risco de ficar sem tratamento aos pacientes ainda em espera.
+## terminou, tenta alocar pacientes em espera a salas livres, aplica o
+## risco de ficar sem tratamento aos pacientes ainda em espera (reduzido
+## por recepcionistas contratados) e aplica a manutenção de zeladores
+## contratados (reduz o desgaste acumulado das salas).
 func tick() -> void:
 	_resolve_finished_services()
 	_assign_waiting_patients()
 	_apply_untreated_risk()
+	_apply_handyman_maintenance()
+
+## Verifica se há ao menos um membro de equipe contratado com o cargo dado,
+## independente de estar alocado a alguma sala. Usado para efeitos globais
+## de cargos como zelador e recepcionista, que neste modelo simplificado
+## não exigem uma sala própria.
+func _has_staff_role(role_id: String) -> bool:
+	for staff in staff_members.values():
+		if staff.role_id == role_id:
+			return true
+	return false
+
+func _apply_handyman_maintenance() -> void:
+	if not _has_staff_role("handyman"):
+		return
+	for room in placed_rooms.values():
+		room.wear = max(0.0, room.wear - HANDYMAN_WEAR_REDUCTION_PER_TICK)
 
 func _resolve_finished_services() -> void:
 	for room in placed_rooms.values():
@@ -147,13 +176,14 @@ func _assign_waiting_patients() -> void:
 			_try_assign_room(patient, _find_free_room_for(patient, "treatment"))
 
 func _apply_untreated_risk() -> void:
+	var risk_multiplier := RECEPTIONIST_RISK_MULTIPLIER if _has_staff_role("receptionist") else 1.0
 	for patient in patients.values():
 		if patient.stage != Patient.Stage.QUEUED and patient.stage != Patient.Stage.AWAITING_TREATMENT:
 			continue
 		var disease: Disease = diseases.get(patient.disease_id)
 		if disease == null:
 			continue
-		patient.health -= disease.untreated_risk_per_tick
+		patient.health -= disease.untreated_risk_per_tick * risk_multiplier
 		if patient.health <= 0.0:
 			patient.health = 0.0
 			patient.stage = Patient.Stage.DECEASED
@@ -184,6 +214,8 @@ func _resolve_treatment(patient: Patient, room: Room) -> void:
 	var role: StaffRole = staff_roles.get(staff.role_id) if staff else null
 	var skill: float = role.base_skill if role else 0.5
 	var cure_chance: float = clamp(disease.base_cure_chance * (0.5 + skill), 0.0, 1.0) if disease else 0.0
+	cure_chance = clamp(cure_chance * _room_wear_multiplier(room), 0.0, 1.0)
+	room.wear += 1.0
 
 	if randf() < cure_chance:
 		patient.stage = Patient.Stage.DISCHARGED
@@ -200,3 +232,10 @@ func _resolve_treatment(patient: Patient, room: Room) -> void:
 		economy.adjust_reputation(-0.05)
 	else:
 		patient.stage = Patient.Stage.QUEUED
+
+## Penalidade multiplicativa na chance de cura por desgaste acumulado sem
+## manutenção. As primeiras ROOM_WEAR_FREE_USES sessões de uso não sofrem
+## penalidade — só degrada com uso sustentado sem um zelador contratado.
+func _room_wear_multiplier(room: Room) -> float:
+	var effective_wear: float = max(0.0, room.wear - ROOM_WEAR_FREE_USES)
+	return clamp(1.0 - effective_wear * ROOM_WEAR_PENALTY_PER_USE, ROOM_WEAR_MIN_MULTIPLIER, 1.0)
