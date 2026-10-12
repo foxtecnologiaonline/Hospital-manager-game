@@ -23,6 +23,10 @@ var grid_size: Vector2i = Vector2i(16, 16)
 var rooms: Array = [] # Array of Room
 var room_definitions: Dictionary = {} # definition_id (String) -> RoomDefinition
 
+var hover_cell: Vector2i = Vector2i.ZERO
+var hover_size: Vector2i = Vector2i.ZERO
+var hover_valid: bool = false
+
 ## Recebe o estado atual do hospital (salas construídas + catálogo de tipos
 ## de sala) e redesenha. Usa Array genérico (não Array[Room]) de propósito:
 ## HospitalSimulation.placed_rooms.values() retorna um Array comum, e
@@ -38,9 +42,29 @@ func grid_to_screen(grid_pos: Vector2) -> Vector2:
 		(grid_pos.x + grid_pos.y) * (TILE_HEIGHT / 2.0)
 	)
 
+## Inverso de grid_to_screen: converte uma posição em coordenadas de tela
+## (mundo 2D local a este nó) para a célula do grid sob esse ponto. Usado
+## para traduzir cliques/posição do mouse em coordenadas de construção.
+func screen_to_grid(screen_pos: Vector2) -> Vector2i:
+	var half_w := TILE_WIDTH / 2.0
+	var half_h := TILE_HEIGHT / 2.0
+	var grid_x := (screen_pos.x / half_w + screen_pos.y / half_h) / 2.0
+	var grid_y := (screen_pos.y / half_h - screen_pos.x / half_w) / 2.0
+	return Vector2i(int(floor(grid_x)), int(floor(grid_y)))
+
+## Atualiza o destaque visual da célula sob o cursor (verde se a construção
+## ali seria válida, vermelho caso contrário). `size` igual a Vector2i.ZERO
+## esconde o destaque.
+func set_hover(cell: Vector2i, size: Vector2i, valid: bool) -> void:
+	hover_cell = cell
+	hover_size = size
+	hover_valid = valid
+	queue_redraw()
+
 func _draw() -> void:
 	_draw_grid_lines()
 	_draw_rooms()
+	_draw_hover()
 
 func _draw_grid_lines() -> void:
 	var grid_color := Color(1.0, 1.0, 1.0, 0.15)
@@ -64,3 +88,19 @@ func _draw_rooms() -> void:
 			grid_to_screen(bottom_left),
 		])
 		draw_colored_polygon(points, color)
+
+func _draw_hover() -> void:
+	if hover_size == Vector2i.ZERO:
+		return
+	var color := Color(0.3, 0.9, 0.3, 0.4) if hover_valid else Color(0.9, 0.3, 0.3, 0.4)
+	var top_left := Vector2(hover_cell)
+	var top_right := top_left + Vector2(hover_size.x, 0)
+	var bottom_right := top_left + Vector2(hover_size.x, hover_size.y)
+	var bottom_left := top_left + Vector2(0, hover_size.y)
+	var points := PackedVector2Array([
+		grid_to_screen(top_left),
+		grid_to_screen(top_right),
+		grid_to_screen(bottom_right),
+		grid_to_screen(bottom_left),
+	])
+	draw_colored_polygon(points, color)

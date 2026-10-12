@@ -10,6 +10,7 @@ func _init() -> void:
 	failures += _test_patient_completes_full_cycle()
 	failures += _test_room_requires_matching_staff_role()
 	failures += _test_two_patients_contend_for_rooms()
+	failures += _test_room_placement_validation()
 
 	if failures == 0:
 		print("OK — todos os testes passaram.")
@@ -125,4 +126,33 @@ func _test_two_patients_contend_for_rooms() -> int:
 		print("  [FALHA] test_two_patients_contend_for_rooms — caixa final inesperado: %d (esperado 50400)" % simulation.economy.cash)
 		return 1
 	print("  [OK] test_two_patients_contend_for_rooms (%d ticks)" % ticks)
+	return 0
+
+## Garante que add_room rejeita sobreposição com uma sala existente e
+## posições fora do grid, mas aceita uma posição válida — base da
+## construção interativa (clique no grid) adicionada na Fase 2.
+func _test_room_placement_validation() -> int:
+	var simulation := HospitalSimulation.new(_make_test_content())
+
+	var first := simulation.add_room("test_diag", Vector2i(0, 0), Vector2i(3, 3))
+	if first == null:
+		print("  [FALHA] test_room_placement_validation — construção inicial deveria ter funcionado")
+		return 1
+
+	var overlapping := simulation.add_room("test_treat", Vector2i(1, 1), Vector2i(3, 3))
+	if overlapping != null:
+		print("  [FALHA] test_room_placement_validation — sala sobreposta não deveria ter sido construída")
+		return 1
+
+	var out_of_bounds := simulation.add_room("test_treat", Vector2i(-1, 0), Vector2i(3, 3))
+	if out_of_bounds != null:
+		print("  [FALHA] test_room_placement_validation — sala fora do grid não deveria ter sido construída")
+		return 1
+
+	var valid := simulation.add_room("test_treat", Vector2i(5, 0), Vector2i(3, 3))
+	if valid == null:
+		print("  [FALHA] test_room_placement_validation — sala válida deveria ter sido construída")
+		return 1
+
+	print("  [OK] test_room_placement_validation")
 	return 0

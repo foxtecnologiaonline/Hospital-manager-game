@@ -11,3 +11,10 @@ position = Vector2(0, 256)
 
 [node name="IsometricGrid" type="Node2D" parent="."]
 script = ExtResource("2_grid")
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="StatusLabel" type="Label" parent="HUD"]
+position = Vector2(16, 16)
+size = Vector2(520, 160)
+text = "Carregando..."

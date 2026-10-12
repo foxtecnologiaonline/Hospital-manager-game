@@ -10,14 +10,15 @@ jogo como referência de design. Veja o porquê em [`docs/ESCOPO.md`](docs/ESCOP
 
 ## Status
 
-🚧 **Fase 0 concluída / Fase 1 (MVP do loop central) funcionalmente completa.** O núcleo da
-simulação funciona de ponta a ponta: paciente entra na fila, é diagnosticado, tratado e recebe
-alta (ou falece, se não for atendido a tempo), com equipe alocada a salas, contenção entre
-pacientes simultâneos tratada corretamente, e economia/reputação reagindo ao resultado — tudo
-coberto por testes automatizados. Há também um placeholder visual (grid isométrico desenhado por
-código, sem sprites/arte própria ainda). **Ainda falta:** construção interativa de salas (clicar
-no grid) e qualquer arte real. Veja o checklist detalhado em
-[`docs/ESCOPO.md`](docs/ESCOPO.md#7-próximos-passos-imediatos-backlog-inicial).
+🚧 **Fase 0 concluída / Fase 1 completa / Fase 2 iniciada.** O núcleo da simulação funciona de
+ponta a ponta: paciente entra na fila, é diagnosticado, tratado e recebe alta (ou falece, se não
+for atendido a tempo), com equipe alocada a salas, contenção entre pacientes simultâneos tratada
+corretamente, e economia/reputação reagindo ao resultado — tudo coberto por testes automatizados.
+O jogo já roda como um loop ao vivo (tick periódico + pacientes chegando sozinhos) e o jogador
+pode **construir salas de verdade**: tecla 1–6 escolhe o tipo, o grid isométrico mostra um
+destaque verde/vermelho sob o cursor, e clique esquerdo constrói. Ainda não há sprites/arte
+própria (é tudo desenhado por código) nem UI gráfica (só teclado + texto). Veja o checklist
+detalhado em [`docs/ESCOPO.md`](docs/ESCOPO.md#7-próximos-passos-imediatos-backlog-inicial).
 
 > **Nota de ambiente:** os arquivos do projeto Godot (incluindo a lógica de simulação e os
 > testes automatizados) foram escritos manualmente nesta sessão porque o container de execução
@@ -25,7 +26,9 @@ no grid) e qualquer arte real. Veja o checklist detalhado em
 > de texto padrão do Godot 4 e a sintaxe do GDScript 4, mas **ainda não foram executados em um
 > Godot real**. O primeiro passo de quem continuar o trabalho com acesso ao Godot deve ser
 > rodar `godot --headless --path game --script res://tests/run_tests.gd` e abrir o projeto no
-> editor para confirmar que tudo importa e roda sem erro.
+> editor para confirmar que tudo importa e roda sem erro. A construção interativa (clique no
+> grid) é especialmente importante de testar manualmente: diferente da lógica de simulação, ela
+> não tem como ser coberta por um teste headless — só abrindo o jogo mesmo.
 
 ## Documentação
 

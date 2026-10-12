@@ -22,6 +22,7 @@ var placed_rooms: Dictionary = {} # room_id (String) -> Room
 var staff_members: Dictionary = {} # staff_id (int) -> StaffMember
 var patients: Dictionary = {} # patient_id (int) -> Patient
 var economy: Economy
+var grid_size: Vector2i = Vector2i(20, 20)
 
 var _next_room_id: int = 1
 var _next_staff_id: int = 1
@@ -39,15 +40,45 @@ func _init(content: Dictionary) -> void:
 		staff_roles[role.id] = role
 	economy = Economy.new()
 
+## Verifica se é possível construir uma sala do tipo `definition_id` na
+## posição/tamanho dados: tipo existe, tamanho respeita o mínimo do tipo,
+## cabe dentro do grid, não sobrepõe nenhuma sala já construída, e o
+## hospital tem caixa suficiente. Não tem efeito colateral (não gasta nem
+## constrói) — serve tanto para `add_room` quanto para pré-visualização de
+## construção (ex.: destacar a célula sob o cursor do jogador).
+func can_place_room(definition_id: String, position: Vector2i, size: Vector2i) -> bool:
+	var definition: RoomDefinition = room_definitions.get(definition_id)
+	if definition == null:
+		return false
+	if size.x < definition.min_size.x or size.y < definition.min_size.y:
+		return false
+	if not _is_within_grid(position, size):
+		return false
+	if _overlaps_existing_room(position, size):
+		return false
+	return economy.can_afford(definition.cost)
+
+func _is_within_grid(position: Vector2i, size: Vector2i) -> bool:
+	return position.x >= 0 and position.y >= 0 and position.x + size.x <= grid_size.x and position.y + size.y <= grid_size.y
+
+func _overlaps_existing_room(position: Vector2i, size: Vector2i) -> bool:
+	for room in placed_rooms.values():
+		if _rects_overlap(position, size, room.position, room.size):
+			return true
+	return false
+
+func _rects_overlap(pos_a: Vector2i, size_a: Vector2i, pos_b: Vector2i, size_b: Vector2i) -> bool:
+	return pos_a.x < pos_b.x + size_b.x and pos_a.x + size_a.x > pos_b.x and pos_a.y < pos_b.y + size_b.y and pos_a.y + size_a.y > pos_b.y
+
 ## Constrói uma sala do tipo `definition_id` na posição/tamanho dados.
-## Retorna null se o tipo de sala não existe ou se o hospital não tem caixa
-## suficiente (o custo é debitado imediatamente).
+## Retorna null se `can_place_room` rejeitar a construção (ver acima). O
+## custo é debitado imediatamente ao construir.
 func add_room(definition_id: String, position: Vector2i, size: Vector2i) -> Room:
 	var definition: RoomDefinition = room_definitions.get(definition_id)
 	if definition == null:
 		push_error("Tipo de sala desconhecido: %s" % definition_id)
 		return null
-	if not economy.can_afford(definition.cost):
+	if not can_place_room(definition_id, position, size):
 		return null
 	economy.spend(definition.cost)
 	var room_id := "room_%d" % _next_room_id

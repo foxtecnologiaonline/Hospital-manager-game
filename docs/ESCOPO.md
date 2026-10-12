@@ -197,33 +197,39 @@ orientado a dados**), estruturar em camadas:
    Godot instalado/acessível no container); precisam ser abertos no editor Godot 4.3+ para
    confirmar que importam e rodam sem erro, e o CI precisa de uma primeira execução real no
    GitHub Actions.
-3. ✅ (placeholder) Câmera isométrica + grid visual das salas construídas —
-   `game/src/presentation/isometric_grid.gd` desenha o grid e as salas por código
-   (`CanvasItem._draw`, losangos coloridos por categoria), sem depender de
-   TileSet/sprites (não há arte própria produzida ainda — ver `LICENSE-ASSETS.md`).
-   **O que ainda falta aqui:** não há construção interativa (clicar para construir
-   sala), nem movimento visual de pacientes/equipe — é só a representação estática
-   das salas já construídas pela demo em `main.gd`. Isso é o próximo passo visual.
+3. ✅ Câmera isométrica + grid visual das salas construídas, agora **interativo**
+   (Fase 2): `isometric_grid.gd` desenha o grid e as salas por código (`CanvasItem._draw`,
+   losangos coloridos por categoria), sem depender de TileSet/sprites (não há arte própria
+   produzida ainda — ver `LICENSE-ASSETS.md`). `main.gd` agora roda um loop de jogo real
+   (`_process` com tick periódico da simulação + geração periódica de pacientes) e permite
+   construir salas: teclas 1–6 selecionam o tipo (ordem de `rooms.json`), o grid mostra um
+   destaque verde/vermelho sob o cursor (`IsometricGrid.screen_to_grid` +
+   `HospitalSimulation.can_place_room`) e clique esquerdo constrói de fato.
+   **O que ainda falta aqui:** não há UI gráfica (botões/ícones, só teclado + texto no HUD),
+   não há como contratar equipe pela interface (só os 2 iniciais, via código), e não há
+   movimento visual de pacientes/equipe pelo mapa.
 4. ✅ Entidade de Paciente com máquina de estados completa (fila → diagnóstico → tratamento →
    alta/óbito) — implementada em `game/src/simulation/patient.gd` (enum `Stage`) e na lógica de
    transição em `HospitalSimulation.tick()`.
 5. ✅ Entidade de Equipe (`game/src/simulation/staff_member.gd`) e de Sala construída
    (`game/src/simulation/room.gd`), com alocação sala↔equipe que valida o cargo exigido
    (`HospitalSimulation.assign_staff_to_room`).
-6. ✅ Loop validado com três cenários automatizados em `game/tests/run_tests.gd`: ciclo
-   completo de 1 paciente, rejeição de cargo incompatível na alocação de equipe, e
-   contenção de 2 pacientes simultâneos por salas únicas (garante que nenhuma sala é
-   ocupada por dois pacientes ao mesmo tempo). Também validado manualmente em
-   `game/src/presentation/main.gd`.
+6. ✅ Loop validado com quatro cenários automatizados em `game/tests/run_tests.gd`: ciclo
+   completo de 1 paciente, rejeição de cargo incompatível na alocação de equipe, contenção
+   de 2 pacientes simultâneos por salas únicas (garante que nenhuma sala é ocupada por dois
+   pacientes ao mesmo tempo), e validação de posicionamento de sala (rejeita sobreposição e
+   posição fora do grid, aceita posição válida — base da construção interativa do item 3).
+   Também validado manualmente em `game/src/presentation/main.gd`.
    ⚠️ **Pendente de execução real:** os testes foram escritos e revisados manualmente nesta
    sessão (sem o binário do Godot disponível no container para rodá-los); precisam ser
    executados com `godot --headless --path game --script res://tests/run_tests.gd` na primeira
    oportunidade, e o resultado real confirmado (o CI em `.github/workflows/ci.yml` já roda esse
-   comando a cada push).
+   comando a cada push). Isso inclui, agora, a parte de input (seleção de sala, clique para
+   construir) que não tem como ser exercitada por um teste headless — só abrindo o jogo mesmo.
 
-**Fase 1 está, portanto, funcionalmente completa** (loop fila → diagnóstico → tratamento →
-alta/óbito + placeholder visual), restando apenas a validação real (item 2/6, acima) e a
-construção interativa (item 3, acima) antes de considerá-la 100% encerrada.
+**Fase 1 está completa** (loop fila → diagnóstico → tratamento → alta/óbito + visual
+interativo básico). **Fase 2 já começou** com a construção interativa de salas; o que falta
+dela está listado abaixo.
 
 **Simplificações conhecidas do modelo de simulação atual** (documentadas para não serem
 confundidas com bugs): cada etapa de diagnóstico/tratamento dura exatamente 1 tick (sem duração
@@ -231,12 +237,13 @@ variável), não há ainda posição/movimento real de pacientes e equipe no map
 salário de equipe não é debitado por tick, e não há sistema de níveis/metas. Esses pontos
 pertencem à Fase 1 (continuação) e à Fase 2.
 
-**Próximo passo recomendado (Fase 2 — expansão de conteúdo e profundidade de gameplay):**
-- Construção interativa de salas (clique no grid, usando `IsometricGrid` como base).
+**Próximo passo recomendado (Fase 2 — restante):**
+- UI gráfica mínima para contratar equipe e selecionar o tipo de sala (hoje é só teclado 1–6
+  e HUD de texto).
 - Zelador e recepcionista ganhando função real na simulação (hoje só existem como dados).
 - Pesquisa, marketing e felicidade de equipe afetando desempenho.
 - Validar com um Godot real tudo o que foi construído até aqui (prioridade acima de
-  qualquer item novo).
+  qualquer item novo — a superfície de código não verificada só cresceu).
 
 ## 8. Referências consultadas
 
