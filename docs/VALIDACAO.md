@@ -1,78 +1,91 @@
-# Guia de validação (primeira abertura num Godot real)
+# Guia de validação
 
-Todo o código em `game/` foi escrito e revisado manualmente em sessões sem acesso ao binário do
-Godot nem à internet para baixá-lo. A lógica foi conferida com cuidado (inclusive traçando ticks
-à mão para prever valores exatos nos testes), mas **nada disso foi de fato executado**. Este
-guia é o roteiro para a primeira pessoa com um Godot 4.3+ disponível confirmar que tudo funciona
-como descrito — e o que fazer se não funcionar.
+Todo o código em `game/` foi inicialmente escrito e revisado só pela leitura, em sessões sem
+acesso ao binário do Godot. Numa sessão posterior, consegui baixar o binário oficial do Godot
+(via release do GitHub — `godotengine.org` está bloqueado pela política de rede deste tipo de
+sessão, mas `github.com`/`objects.githubusercontent.com` não) e rodar de fato o que havia sido
+escrito. **Os passos 1 e 2 abaixo já foram executados e confirmados** nesta sessão, em duas
+versões do engine (4.3.0 — a mesma que o CI usa — e 4.5-stable). O que falta (passo 3) exige uma
+tela e um humano, e só pode ser feito por quem está lendo isto.
 
-## 1. Importar o projeto
+## 1. Importar o projeto — ✅ confirmado
 
 ```sh
 godot --headless --path game --import
 ```
 
-Deve terminar sem erros. Se der erro, o mais provável é um problema de sintaxe em algum `.gd` ou
-de referência em `main.tscn`/`project.godot` — confira a mensagem de erro, ela deve apontar o
-arquivo e a linha.
+Confirmado sem erros em Godot 4.3.0 e 4.5-stable: todas as 10 classes globais
+(`ContentLoader`, `Disease`, `Economy`, `HospitalSimulation`, `IsometricGrid`, `Patient`,
+`Room`, `RoomDefinition`, `StaffMember`, `StaffRole`) são registradas corretamente.
 
-## 2. Rodar os testes automatizados
+## 2. Testes automatizados — ✅ confirmado
 
 ```sh
 godot --headless --path game --script res://tests/run_tests.gd
 ```
 
-Saída esperada: `OK — todos os testes passaram.` e código de saída 0. Hoje são 7 testes em
-`game/tests/run_tests.gd`, cobrindo só a camada de simulação (`game/src/simulation/`) — nenhum
-deles testa input/UI, porque isso não é possível de forma headless.
+Saída real obtida (idêntica em 4.3.0 e 4.5-stable):
 
-Se algum teste falhar, a mensagem `[FALHA] ...` identifica qual e o valor esperado vs. obtido —
-isso aponta direto para o bug (ou para um erro de cálculo meu ao escrever o teste).
+```
+  [OK] test_patient_completes_full_cycle (3 ticks)
+  [OK] test_room_requires_matching_staff_role
+  [OK] test_two_patients_contend_for_rooms (4 ticks)
+  [OK] test_room_placement_validation
+  [OK] test_handyman_reduces_room_wear
+  [OK] test_receptionist_halves_untreated_risk
+  [OK] test_find_room_at_and_idle_staff
+OK — todos os testes passaram.
+```
 
-## 3. Abrir o projeto no editor e rodar a cena
+Os números de ticks batem exatamente com os calculados à mão durante a escrita dos testes — ou
+seja, a lógica da simulação está correta, não só "parece certa na leitura".
 
-Abra `game/project.godot` no editor e rode a cena principal (`F5` ou o botão de play).
-Checklist do que deveria acontecer:
+Também confirmado: rodar a cena principal (`main.tscn`) de forma headless por ~10 segundos
+(`godot --headless --path game --quit-after 600`) não produz nenhum erro — isso exercita vários
+ticks da simulação e a geração periódica de pacientes, e prova que o código de desenho do grid
+(`_draw()`) não quebra em runtime, mesmo sem uma tela real por trás.
 
-- [ ] A janela abre sem erros no console, mostrando um grid isométrico (losangos com linhas
-      brancas translúcidas) e um HUD de texto no canto superior esquerdo.
+## 3. Checklist visual/manual — ⬜ ainda precisa de um humano com tela
+
+Isto é a única parte que genuinamente não pode ser feita de dentro desta sessão: modo headless
+não tem mouse, teclado nem monitor reais, então clique, hover e a aparência visual do grid nunca
+foram vistos por ninguém. **Preciso que você faça isto**, abrindo `game/project.godot` no editor
+Godot (4.3 ou mais novo) e rodando a cena principal (`F5`):
+
+- [ ] A janela abre mostrando um grid isométrico (losangos com linhas brancas translúcidas) e um
+      HUD de texto no canto superior esquerdo.
 - [ ] Duas salas já aparecem construídas (losango azul = diagnóstico, verde = tratamento).
-- [ ] Um paciente é gerado automaticamente ao abrir, e mais um a cada ~4 segundos — o HUD deve
-      mostrar o contador de "Pacientes ativos" mudando.
+- [ ] O contador de "Pacientes ativos" no HUD muda sozinho a cada poucos segundos.
 - [ ] Mover o mouse sobre o grid mostra um losango de destaque verde (posição válida) ou vermelho
       (inválida/sobrepõe outra sala) seguindo o cursor.
-- [ ] Teclas `1` a `6` trocam o tipo de sala selecionado — o HUD deve atualizar o nome e custo.
+- [ ] Teclas `1` a `6` trocam o tipo de sala selecionado — o HUD atualiza nome e custo.
 - [ ] Clicar em área livre com destaque verde constrói a sala e debita o custo do caixa.
-- [ ] Clicar em área livre com destaque vermelho não constrói nada (mensagem de erro no HUD).
+- [ ] Clicar em área livre com destaque vermelho não constrói nada (mensagem no HUD).
 - [ ] Teclas `Q`/`W`/`E`/`R` contratam médico/enfermeira/zelador/recepcionista (mensagem no HUD).
-- [ ] Clicar numa sala já construída (em vez de área livre) aloca um membro de equipe ocioso
-      compatível a ela, se houver (mensagem no HUD confirma ou explica por que não).
-- [ ] Depois de várias curas na mesma sala de tratamento sem zelador, a chance de cura deveria
-      cair perceptivelmente (mais pacientes voltando para a fila); contratar um zelador (`E`)
-      deveria reverter isso em poucos segundos.
+- [ ] Clicar numa sala já construída aloca um membro de equipe ocioso compatível a ela, se
+      houver (mensagem no HUD confirma ou explica por que não).
+- [ ] Depois de muitas curas na mesma sala de tratamento sem zelador, a chance de cura cai
+      perceptivelmente; contratar um zelador (`E`) deveria reverter isso em poucos segundos.
 
 Nenhuma arte real existe ainda — tudo isso é formas geométricas desenhadas por código
-(`game/src/presentation/isometric_grid.gd`). Isso é esperado, não é um bug.
+(`game/src/presentation/isometric_grid.gd`), de propósito (ver seção 3 de `docs/ESCOPO.md`).
+Isso é esperado, não é um bug.
 
-## 4. Rodar o CI
+## 4. CI
 
-`.github/workflows/ci.yml` já está configurado para rodar os passos 1 e 2 a cada push. Confirme
-que ele passa no GitHub Actions na primeira oportunidade — ele nunca rodou de fato até agora.
+`.github/workflows/ci.yml` roda exatamente os comandos dos passos 1 e 2, com Godot 4.3.0 — a
+mesma versão testada aqui. Ainda não foi confirmada uma execução real no GitHub Actions (essa
+confirmação só é visível na aba Actions do repositório), mas os mesmos comandos, com a mesma
+versão do engine, já rodaram com sucesso nesta sessão.
 
-## 5. Se algo estiver quebrado
+## 5. Se algo do passo 3 estiver quebrado
 
-- **Erro de importação/sintaxe:** corrija o arquivo apontado pela mensagem de erro; é
-  provavelmente um deslize de digitação meu, não um problema de design.
-- **Teste automatizado falhando:** compare o valor esperado vs. obtido na mensagem — ou a lógica
-  tem um bug, ou minha conta manual (feita sem rodar nada) estava errada. Ambos são possíveis;
-  corrija o que estiver errado e, se for a lógica, ajuste o teste também se o novo
-  comportamento for o correto.
 - **Cena abre mas nada aparece:** confira o console do editor por erros de `_draw()` ou de nó
-  não encontrado (`$IsometricGrid`, `$HUD/StatusLabel`) — provavelmente um nome de nó
-  divergente entre `main.tscn` e `main.gd`.
-- **Input não responde:** confira se o projeto está capturando foco de teclado/mouse
-  corretamente (comum em alguns ambientes de CI/headless, mas não deveria ocorrer no editor).
+  não encontrado (`$IsometricGrid`, `$HUD/StatusLabel`).
+- **Input não responde:** confira se a janela do jogo está com foco (clique nela antes de usar
+  teclado/mouse).
+- **Posição do grid/câmera parece errada:** os valores de `Camera2D.position` em `main.tscn`
+  foram calculados à mão para enquadrar um grid de 16×16 células — ajuste-os diretamente no
+  editor se não estiver bem centrado; isso é cosmético, não afeta a lógica.
 
-Depois de validar, atualize o checklist de `docs/ESCOPO.md` (seção 7) removendo os avisos de
-"pendente de validação real" — eles existem precisamente para serem removidos quando este guia
-for seguido com sucesso.
+Depois de concluir o checklist do passo 3, marque-o como validado em `docs/ESCOPO.md` (seção 7).

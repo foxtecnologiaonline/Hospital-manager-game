@@ -193,10 +193,10 @@ orientado a dados**), estruturar em camadas:
    `LICENSE-ASSETS.md` — CC BY-SA 4.0).
 2. ✅ Inicializar projeto Godot 4 com a estrutura de pastas da seção 4.3 e um workflow de CI
    básico (`.github/workflows/ci.yml`).
-   ⚠️ **Pendente de validação real:** os arquivos foram escritos manualmente nesta sessão (sem
-   Godot instalado/acessível no container); precisam ser abertos no editor Godot 4.3+ para
-   confirmar que importam e rodam sem erro, e o CI precisa de uma primeira execução real no
-   GitHub Actions.
+   ✅ **Validado de fato** (ver `docs/VALIDACAO.md`): importado e rodado sem erros em Godot
+   4.3.0 (a mesma versão que o CI usa) e 4.5-stable. A execução real no GitHub Actions ainda não
+   foi confirmada (só é visível na aba Actions do repositório), mas os mesmos comandos já
+   passaram localmente com a mesma versão do engine.
 3. ✅ Câmera isométrica + grid visual das salas construídas, agora **interativo**
    (Fase 2): `isometric_grid.gd` desenha o grid e as salas por código (`CanvasItem._draw`,
    losangos coloridos por categoria), sem depender de TileSet/sprites (não há arte própria
@@ -204,34 +204,35 @@ orientado a dados**), estruturar em camadas:
    (`_process` com tick periódico da simulação + geração periódica de pacientes) e permite
    construir salas: teclas 1–6 selecionam o tipo (ordem de `rooms.json`), o grid mostra um
    destaque verde/vermelho sob o cursor (`IsometricGrid.screen_to_grid` +
-   `HospitalSimulation.can_place_room`) e clique esquerdo constrói de fato.
-   **O que ainda falta aqui:** não há UI gráfica (botões/ícones, só teclado + texto no HUD),
-   não há como contratar equipe pela interface (só os 2 iniciais, via código), e não há
-   movimento visual de pacientes/equipe pelo mapa.
+   `HospitalSimulation.can_place_room`) e clique esquerdo constrói de fato; clicar numa sala já
+   construída aloca equipe ociosa (item 8, abaixo).
+   ✅ Confirmado rodar sem erros em modo headless por ~10s (vários ticks + geração de
+   pacientes), mas a aparência visual e a resposta a clique/teclado ainda **não foram vistas por
+   um humano** — isso exige uma tela real (ver passo 3 de `docs/VALIDACAO.md`).
+   **O que ainda falta aqui:** não há UI gráfica (botões/ícones, só teclado + texto no HUD), e
+   não há movimento visual de pacientes/equipe pelo mapa.
 4. ✅ Entidade de Paciente com máquina de estados completa (fila → diagnóstico → tratamento →
    alta/óbito) — implementada em `game/src/simulation/patient.gd` (enum `Stage`) e na lógica de
    transição em `HospitalSimulation.tick()`.
 5. ✅ Entidade de Equipe (`game/src/simulation/staff_member.gd`) e de Sala construída
    (`game/src/simulation/room.gd`), com alocação sala↔equipe que valida o cargo exigido
    (`HospitalSimulation.assign_staff_to_room`).
-6. ✅ Loop validado com seis cenários automatizados em `game/tests/run_tests.gd`: ciclo
+6. ✅ Loop validado com sete cenários automatizados em `game/tests/run_tests.gd`: ciclo
    completo de 1 paciente, rejeição de cargo incompatível na alocação de equipe, contenção
    de 2 pacientes simultâneos por salas únicas (garante que nenhuma sala é ocupada por dois
    pacientes ao mesmo tempo), validação de posicionamento de sala (rejeita sobreposição e
    posição fora do grid, aceita posição válida — base da construção interativa do item 3),
-   zelador reduzindo o desgaste acumulado de uma sala, e recepcionista reduzindo à metade o
-   risco de piora de pacientes não atendidos. Também validado manualmente em
-   `game/src/presentation/main.gd`.
-   ⚠️ **Pendente de execução real:** os testes foram escritos e revisados manualmente nesta
-   sessão (sem o binário do Godot disponível no container para rodá-los); precisam ser
-   executados com `godot --headless --path game --script res://tests/run_tests.gd` na primeira
-   oportunidade, e o resultado real confirmado (o CI em `.github/workflows/ci.yml` já roda esse
-   comando a cada push). Isso inclui, agora, a parte de input (seleção de sala, clique para
-   construir) que não tem como ser exercitada por um teste headless — só abrindo o jogo mesmo.
+   zelador reduzindo o desgaste acumulado de uma sala, recepcionista reduzindo à metade o
+   risco de piora de pacientes não atendidos, e alocação de equipe pelo clique (item 8).
+   ✅ **Executado de fato** (ver `docs/VALIDACAO.md`): os 7 testes passam em Godot 4.3.0 e
+   4.5-stable, com os mesmos números de tick previstos manualmente ao escrevê-los. A única
+   parte que continua impossível de testar de forma headless é o input real (seleção de sala,
+   clique para construir/alocar) — isso só pode ser confirmado abrindo o jogo numa tela de
+   verdade (passo 3 de `docs/VALIDACAO.md`).
 
 **Fase 1 está completa** (loop fila → diagnóstico → tratamento → alta/óbito + visual
-interativo básico). **Fase 2 já começou** com a construção interativa de salas; o que falta
-dela está listado abaixo.
+interativo básico) **e validada rodando de fato**. **Fase 2 já começou** com a construção
+interativa de salas; o que falta dela está listado abaixo.
 
 **Simplificações conhecidas do modelo de simulação atual** (documentadas para não serem
 confundidas com bugs): cada etapa de diagnóstico/tratamento dura exatamente 1 tick (sem duração
@@ -252,12 +253,13 @@ pertencem à Fase 1 (continuação) e à Fase 2.
    de fato utilizável sem editar código.
 
 **Próximo passo recomendado (Fase 2 — restante):**
+- ⬜ **Checklist visual/manual** de `docs/VALIDACAO.md` (passo 3) — a única validação que falta
+  e que exige um humano com tela: ver o grid, clicar, confirmar que a câmera está bem
+  posicionada. Tudo que podia ser confirmado sem olhos humanos (importação, lógica de
+  simulação, a cena rodando sem travar) já foi.
 - UI gráfica mínima (botões/ícones) para contratar equipe e selecionar o tipo de sala — hoje é
   só teclado (1–6, Q/W/E/R) e HUD de texto.
 - Pesquisa, marketing e felicidade de equipe afetando desempenho.
-- Validar com um Godot real tudo o que foi construído até aqui — ver `docs/VALIDACAO.md`, o
-  roteiro passo a passo para essa validação (prioridade acima de qualquer item novo; a
-  superfície de código não verificada só cresceu a cada incremento).
 
 ## 8. Referências consultadas
 

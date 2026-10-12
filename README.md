@@ -10,8 +10,8 @@ jogo como referência de design. Veja o porquê em [`docs/ESCOPO.md`](docs/ESCOP
 
 ## Status
 
-🚧 **Fase 0 concluída / Fase 1 completa / Fase 2 iniciada.** O núcleo da simulação funciona de
-ponta a ponta: paciente entra na fila, é diagnosticado, tratado e recebe alta (ou falece, se não
+🚧 **Fase 0 concluída / Fase 1 completa (e validada rodando de fato) / Fase 2 iniciada.** O
+núcleo da simulação funciona de ponta a ponta: paciente entra na fila, é diagnosticado, tratado e recebe alta (ou falece, se não
 for atendido a tempo), com equipe alocada a salas, contenção entre pacientes simultâneos tratada
 corretamente, e economia/reputação reagindo ao resultado — tudo coberto por testes automatizados.
 O jogo já roda como um loop ao vivo (tick periódico + pacientes chegando sozinhos) e o jogador
@@ -23,15 +23,15 @@ respectivamente); médico/enfermeira (Q/W) precisam ser alocados por clique. Ain
 sprites/arte própria (é tudo desenhado por código) nem UI gráfica (só teclado + texto). Veja o
 checklist detalhado em [`docs/ESCOPO.md`](docs/ESCOPO.md#7-próximos-passos-imediatos-backlog-inicial).
 
-> **Nota de ambiente:** os arquivos do projeto Godot (incluindo a lógica de simulação e os
-> testes automatizados) foram escritos manualmente nesta sessão porque o container de execução
-> não tem o binário do Godot instalado nem acesso de rede para baixá-lo. Eles seguem o formato
-> de texto padrão do Godot 4 e a sintaxe do GDScript 4, mas **ainda não foram executados em um
-> Godot real**. O primeiro passo de quem continuar o trabalho com acesso ao Godot deve ser
-> rodar `godot --headless --path game --script res://tests/run_tests.gd` e abrir o projeto no
-> editor para confirmar que tudo importa e roda sem erro. A construção interativa (clique no
-> grid) é especialmente importante de testar manualmente: diferente da lógica de simulação, ela
-> não tem como ser coberta por um teste headless — só abrindo o jogo mesmo.
+> **Nota de ambiente — atualizada:** o código foi inicialmente escrito sem acesso ao binário do
+> Godot. Em uma sessão posterior, consegui baixar o Godot (via release do GitHub, já que
+> `godotengine.org` está bloqueado pela política de rede, mas `github.com` não) e **rodar de
+> fato** o projeto: importação e os 7 testes automatizados passam sem erro em Godot 4.3.0 e
+> 4.5-stable, com os mesmos resultados calculados à mão ao escrever os testes. A cena principal
+> também roda ~10s em modo headless sem nenhum erro. **O que ainda falta** é só o que exige uma
+> tela e um humano de verdade (clique, hover, aparência visual) — modo headless não tem mouse
+> nem monitor. Veja o checklist desse passo final em
+> [`docs/VALIDACAO.md`](docs/VALIDACAO.md#3-checklist-visualmanual--️-ainda-precisa-de-um-humano-com-tela).
 
 ## Documentação
 
