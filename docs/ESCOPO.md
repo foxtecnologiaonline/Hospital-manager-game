@@ -244,16 +244,20 @@ pertencem à Fase 1 (continuação) e à Fase 2.
    `HospitalSimulation._room_wear_multiplier`); recepcionista reduz à metade o risco de piora
    de pacientes não atendidos (`_apply_untreated_risk`). Ambos são efeitos globais (basta
    contratar — não precisam de uma sala própria neste modelo simplificado) e já contratáveis
-   no protótipo pelas teclas E/R (médico/enfermeira por Q/W, mas sem alocação automática).
+   no protótipo pelas teclas E/R.
+8. ✅ Alocação de médico/enfermeira pela interface: clicar numa sala já construída (em vez de
+   área livre) aloca a ela um membro de equipe ocioso e compatível, via
+   `HospitalSimulation.find_room_at` + `find_idle_staff` (cobertos por teste automatizado) e
+   `main.gd._try_assign_staff_to_room`. Agora toda equipe contratada pelas teclas Q/W/E/R é
+   de fato utilizável sem editar código.
 
 **Próximo passo recomendado (Fase 2 — restante):**
-- UI gráfica mínima para contratar equipe e selecionar o tipo de sala (hoje é só teclado
-  1–6/Q/W/E/R e HUD de texto).
-- Alocação de médico/enfermeira a salas pela interface (hoje só os 2 iniciais são alocados,
-  via código em `main.gd`).
+- UI gráfica mínima (botões/ícones) para contratar equipe e selecionar o tipo de sala — hoje é
+  só teclado (1–6, Q/W/E/R) e HUD de texto.
 - Pesquisa, marketing e felicidade de equipe afetando desempenho.
-- Validar com um Godot real tudo o que foi construído até aqui (prioridade acima de
-  qualquer item novo — a superfície de código não verificada só cresceu).
+- Validar com um Godot real tudo o que foi construído até aqui — ver `docs/VALIDACAO.md`, o
+  roteiro passo a passo para essa validação (prioridade acima de qualquer item novo; a
+  superfície de código não verificada só cresceu a cada incremento).
 
 ## 8. Referências consultadas
 

@@ -6,12 +6,13 @@ extends Node2D
 ##
 ## Controles temporários (sem HUD gráfico de botões ainda — ver backlog em
 ## docs/ESCOPO.md): teclas 1–6 selecionam o tipo de sala a construir
-## (na ordem definida em game/content/rooms.json); clique esquerdo constrói
-## a sala selecionada na célula sob o cursor, se a posição for válida.
-## Teclas Q/W/E/R contratam médico/enfermeira/zelador/recepcionista — mas só
-## zelador e recepcionista têm efeito sem UI de alocação (são cargos
-## "globais" neste modelo simplificado; médico/enfermeira ainda precisam
-## ser alocados a uma sala por código, só os 2 iniciais o são).
+## (na ordem definida em game/content/rooms.json); clique esquerdo em área
+## livre constrói a sala selecionada, se a posição for válida. Clique
+## esquerdo numa sala já construída, em vez disso, aloca a ela um membro de
+## equipe ocioso e compatível (se houver). Teclas Q/W/E/R contratam
+## médico/enfermeira/zelador/recepcionista — zelador e recepcionista têm
+## efeito imediato (são cargos "globais" neste modelo simplificado), já
+## médico/enfermeira só ajudam depois de alocados a uma sala (pelo clique).
 
 const TICK_INTERVAL: float = 1.0
 const PATIENT_SPAWN_INTERVAL: float = 4.0
@@ -99,10 +100,16 @@ func _update_hover() -> void:
 	grid.set_hover(cell, definition.min_size, valid)
 
 func _try_build_at_mouse() -> void:
+	var cell := grid.screen_to_grid(get_global_mouse_position())
+
+	var existing_room := simulation.find_room_at(cell)
+	if existing_room != null:
+		_try_assign_staff_to_room(existing_room)
+		return
+
 	var definition: RoomDefinition = simulation.room_definitions.get(selected_room_definition_id)
 	if definition == null:
 		return
-	var cell := grid.screen_to_grid(get_global_mouse_position())
 	var room := simulation.add_room(selected_room_definition_id, cell, definition.min_size)
 	if room == null:
 		status_message = "Não é possível construir '%s' em (%d, %d)." % [definition.display_name, cell.x, cell.y]
@@ -110,6 +117,37 @@ func _try_build_at_mouse() -> void:
 		status_message = "Construído: %s em (%d, %d)." % [definition.display_name, cell.x, cell.y]
 	_refresh_grid()
 	_update_hover()
+	_update_hud()
+
+## Clicar numa sala já construída (em vez de área livre) tenta alocar um
+## membro de equipe ocioso e compatível a ela, em vez de tentar construir
+## ali (o que falharia por sobreposição de qualquer forma).
+func _try_assign_staff_to_room(room: Room) -> void:
+	var definition: RoomDefinition = simulation.room_definitions.get(room.definition_id)
+	var room_label: String = definition.display_name if definition else room.definition_id
+
+	if room.is_staffed():
+		status_message = "'%s' já tem equipe alocada." % room_label
+		_update_hud()
+		return
+
+	var required_role: String = definition.required_staff_role if definition else ""
+	if required_role == "":
+		status_message = "'%s' não exige equipe." % room_label
+		_update_hud()
+		return
+
+	var idle_staff := simulation.find_idle_staff(required_role)
+	if idle_staff == null:
+		var role: StaffRole = simulation.staff_roles.get(required_role)
+		var role_label: String = role.display_name if role else required_role
+		status_message = "Nenhum(a) %s disponível para alocar em '%s' (contrate com Q/W)." % [role_label, room_label]
+		_update_hud()
+		return
+
+	simulation.assign_staff_to_room(idle_staff.staff_id, room.room_id)
+	status_message = "Equipe alocada em '%s'." % room_label
+	_refresh_grid()
 	_update_hud()
 
 func _handle_hire_shortcut(keycode: int) -> void:
@@ -164,7 +202,8 @@ func _update_hud() -> void:
 		"Pacientes ativos: %d" % _count_active_patients(),
 		"Equipe — zeladores: %d | recepcionistas: %d" % [_count_staff_with_role("handyman"), _count_staff_with_role("receptionist")],
 		"Sala selecionada [1-%d]: %s (custo %d)" % [room_definition_order.size(), definition.display_name if definition else "?", definition.cost if definition else 0],
-		"Clique no grid para construir. Q/W/E/R contrata médico/enfermeira/zelador/recepcionista.",
+		"Clique em área livre constrói; clique numa sala aloca equipe ociosa.",
+		"Q/W/E/R contrata médico/enfermeira/zelador/recepcionista.",
 	]
 	if status_message != "":
 		lines.append(status_message)

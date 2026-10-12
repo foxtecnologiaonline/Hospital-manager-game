@@ -13,6 +13,7 @@ func _init() -> void:
 	failures += _test_room_placement_validation()
 	failures += _test_handyman_reduces_room_wear()
 	failures += _test_receptionist_halves_untreated_risk()
+	failures += _test_find_room_at_and_idle_staff()
 
 	if failures == 0:
 		print("OK — todos os testes passaram.")
@@ -204,4 +205,36 @@ func _test_receptionist_halves_untreated_risk() -> int:
 		return 1
 
 	print("  [OK] test_receptionist_halves_untreated_risk")
+	return 0
+
+## Garante que find_room_at distingue corretamente dentro/fora do footprint
+## de uma sala, e que find_idle_staff só retorna equipe ainda não alocada —
+## a base da alocação de equipe pelo clique na UI.
+func _test_find_room_at_and_idle_staff() -> int:
+	var simulation := HospitalSimulation.new(_make_test_content())
+	var room := simulation.add_room("test_diag", Vector2i(2, 2), Vector2i(3, 3))
+
+	var inside := simulation.find_room_at(Vector2i(3, 3))
+	if inside != room:
+		print("  [FALHA] test_find_room_at_and_idle_staff — ponto dentro da sala não encontrou a sala")
+		return 1
+
+	var outside := simulation.find_room_at(Vector2i(0, 0))
+	if outside != null:
+		print("  [FALHA] test_find_room_at_and_idle_staff — ponto fora da sala encontrou uma sala")
+		return 1
+
+	var hired := simulation.hire_staff("doctor")
+	var idle := simulation.find_idle_staff("doctor")
+	if idle != hired:
+		print("  [FALHA] test_find_room_at_and_idle_staff — não encontrou o médico recém-contratado como ocioso")
+		return 1
+
+	simulation.assign_staff_to_room(hired.staff_id, room.room_id)
+	var idle_after_assignment := simulation.find_idle_staff("doctor")
+	if idle_after_assignment != null:
+		print("  [FALHA] test_find_room_at_and_idle_staff — médico já alocado não deveria aparecer como ocioso")
+		return 1
+
+	print("  [OK] test_find_room_at_and_idle_staff")
 	return 0

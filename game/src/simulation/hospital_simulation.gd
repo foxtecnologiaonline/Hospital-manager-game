@@ -120,6 +120,25 @@ func assign_staff_to_room(staff_id: int, room_id: String) -> bool:
 	staff.assigned_room_id = room_id
 	return true
 
+## Primeiro membro de equipe contratado do cargo `role_id` que ainda não
+## está alocado a nenhuma sala, ou null se não houver nenhum. Usado pela UI
+## para alocar equipe clicando numa sala já construída.
+func find_idle_staff(role_id: String) -> StaffMember:
+	for staff in staff_members.values():
+		if staff.role_id == role_id and staff.assigned_room_id == "":
+			return staff
+	return null
+
+## Sala construída cujo footprint contém a célula dada, ou null se a célula
+## não estiver sobre nenhuma sala. Usado pela UI para distinguir "clique
+## numa sala existente" (alocar equipe) de "clique em área livre"
+## (construir uma sala nova).
+func find_room_at(cell: Vector2i) -> Room:
+	for room in placed_rooms.values():
+		if cell.x >= room.position.x and cell.x < room.position.x + room.size.x and cell.y >= room.position.y and cell.y < room.position.y + room.size.y:
+			return room
+	return null
+
 func spawn_patient(disease_id: String) -> Patient:
 	var patient := Patient.new(_next_patient_id, disease_id)
 	_next_patient_id += 1
