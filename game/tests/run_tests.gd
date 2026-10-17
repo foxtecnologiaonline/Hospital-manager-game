@@ -14,6 +14,7 @@ func _init() -> void:
 	failures += _test_handyman_reduces_room_wear()
 	failures += _test_receptionist_halves_untreated_risk()
 	failures += _test_find_room_at_and_idle_staff()
+	failures += _test_staff_fatigue_and_happiness()
 
 	if failures == 0:
 		print("OK — todos os testes passaram.")
@@ -237,4 +238,40 @@ func _test_find_room_at_and_idle_staff() -> int:
 		return 1
 
 	print("  [OK] test_find_room_at_and_idle_staff")
+	return 0
+
+## Garante que fadiga sobe com atendimento sustentado (reduzindo felicidade
+## depois de passar o limiar livre) e desce — junto com a felicidade — em
+## repouso. Chama _update_staff_fatigue diretamente (método "privado" só
+## por convenção em GDScript) para isolar o mecanismo sem precisar montar
+## um paciente real a cada tick.
+func _test_staff_fatigue_and_happiness() -> int:
+	var simulation := HospitalSimulation.new(_make_test_content())
+	var room := simulation.add_room("test_treat", Vector2i(0, 0), Vector2i(3, 3))
+	var staff := simulation.hire_staff("doctor")
+	simulation.assign_staff_to_room(staff.staff_id, room.room_id)
+
+	room.occupant_patient_id = 1
+	for i in range(7):
+		simulation._update_staff_fatigue()
+
+	if not is_equal_approx(staff.fatigue, 0.7):
+		print("  [FALHA] test_staff_fatigue_and_happiness — fadiga esperada 0.70 após 7 atendimentos, obtida %.2f" % staff.fatigue)
+		return 1
+	if is_equal_approx(staff.happiness, 1.0):
+		print("  [FALHA] test_staff_fatigue_and_happiness — felicidade deveria ter caído com fadiga alta")
+		return 1
+
+	room.occupant_patient_id = -1
+	for i in range(14):
+		simulation._update_staff_fatigue()
+
+	if not is_equal_approx(staff.fatigue, 0.0):
+		print("  [FALHA] test_staff_fatigue_and_happiness — fadiga deveria zerar após descanso, obtida %.2f" % staff.fatigue)
+		return 1
+	if not is_equal_approx(staff.happiness, 1.0):
+		print("  [FALHA] test_staff_fatigue_and_happiness — felicidade deveria voltar a 1.0 após descanso, obtida %.2f" % staff.happiness)
+		return 1
+
+	print("  [OK] test_staff_fatigue_and_happiness")
 	return 0

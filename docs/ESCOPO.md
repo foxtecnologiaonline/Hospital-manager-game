@@ -217,14 +217,15 @@ orientado a dados**), estruturar em camadas:
 5. ✅ Entidade de Equipe (`game/src/simulation/staff_member.gd`) e de Sala construída
    (`game/src/simulation/room.gd`), com alocação sala↔equipe que valida o cargo exigido
    (`HospitalSimulation.assign_staff_to_room`).
-6. ✅ Loop validado com sete cenários automatizados em `game/tests/run_tests.gd`: ciclo
+6. ✅ Loop validado com oito cenários automatizados em `game/tests/run_tests.gd`: ciclo
    completo de 1 paciente, rejeição de cargo incompatível na alocação de equipe, contenção
    de 2 pacientes simultâneos por salas únicas (garante que nenhuma sala é ocupada por dois
    pacientes ao mesmo tempo), validação de posicionamento de sala (rejeita sobreposição e
    posição fora do grid, aceita posição válida — base da construção interativa do item 3),
    zelador reduzindo o desgaste acumulado de uma sala, recepcionista reduzindo à metade o
-   risco de piora de pacientes não atendidos, e alocação de equipe pelo clique (item 8).
-   ✅ **Executado de fato** (ver `docs/VALIDACAO.md`): os 7 testes passam em Godot 4.3.0 e
+   risco de piora de pacientes não atendidos, alocação de equipe pelo clique (item 8), e
+   fadiga/felicidade de equipe (item 9).
+   ✅ **Executado de fato** (ver `docs/VALIDACAO.md`): os 8 testes passam em Godot 4.3.0 e
    4.5-stable, com os mesmos números de tick previstos manualmente ao escrevê-los. A única
    parte que continua impossível de testar de forma headless é o input real (seleção de sala,
    clique para construir/alocar) — isso só pode ser confirmado abrindo o jogo numa tela de
@@ -251,15 +252,23 @@ pertencem à Fase 1 (continuação) e à Fase 2.
    `HospitalSimulation.find_room_at` + `find_idle_staff` (cobertos por teste automatizado) e
    `main.gd._try_assign_staff_to_room`. Agora toda equipe contratada pelas teclas Q/W/E/R é
    de fato utilizável sem editar código.
+9. ✅ Fadiga e felicidade de equipe afetando desempenho: quem está alocado a uma sala e
+   atendendo acumula fadiga (`_update_staff_fatigue`); fadiga sustentada (acima de um limiar)
+   reduz a felicidade, e felicidade baixa reduz a habilidade efetiva usada em
+   `_resolve_treatment` — equipe exausta cura menos. Quem está livre (sala não ocupada)
+   descansa e recupera. HUD do protótipo mostra quantos estão "cansados".
+
+✅ **Todo este incremento (itens 7–9) já foi validado rodando de fato** nesta sessão — não é só
+revisão de leitura: importação limpa, os 8 testes automatizados passam (incluindo o novo de
+fadiga/felicidade), e a cena principal roda ~10s headless sem erro. Ver `docs/VALIDACAO.md`.
 
 **Próximo passo recomendado (Fase 2 — restante):**
 - ⬜ **Checklist visual/manual** de `docs/VALIDACAO.md` (passo 3) — a única validação que falta
   e que exige um humano com tela: ver o grid, clicar, confirmar que a câmera está bem
-  posicionada. Tudo que podia ser confirmado sem olhos humanos (importação, lógica de
-  simulação, a cena rodando sem travar) já foi.
+  posicionada. Tudo que podia ser confirmado sem olhos humanos já foi.
 - UI gráfica mínima (botões/ícones) para contratar equipe e selecionar o tipo de sala — hoje é
   só teclado (1–6, Q/W/E/R) e HUD de texto.
-- Pesquisa, marketing e felicidade de equipe afetando desempenho.
+- Pesquisa e marketing afetando o fluxo de pacientes/reputação.
 
 ## 8. Referências consultadas
 

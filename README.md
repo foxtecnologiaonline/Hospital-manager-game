@@ -19,16 +19,19 @@ pode **construir salas de verdade**: tecla 1–6 escolhe o tipo, o grid isométr
 destaque verde/vermelho sob o cursor, e clique esquerdo em área livre constrói. Clicar numa sala
 já construída aloca a ela um membro de equipe ocioso compatível. Zelador e recepcionista
 (teclas E/R) têm efeito imediato (reduzem desgaste de sala e risco de piora de pacientes,
-respectivamente); médico/enfermeira (Q/W) precisam ser alocados por clique. Ainda não há
-sprites/arte própria (é tudo desenhado por código) nem UI gráfica (só teclado + texto). Veja o
-checklist detalhado em [`docs/ESCOPO.md`](docs/ESCOPO.md#7-próximos-passos-imediatos-backlog-inicial).
+respectivamente); médico/enfermeira (Q/W) precisam ser alocados por clique. Quem atende
+pacientes sem descanso acumula fadiga e perde felicidade, curando menos — equipe ociosa
+descansa e se recupera. Ainda não há sprites/arte própria (é tudo desenhado por código) nem UI
+gráfica (só teclado + texto). Veja o checklist detalhado em
+[`docs/ESCOPO.md`](docs/ESCOPO.md#7-próximos-passos-imediatos-backlog-inicial).
 
 > **Nota de ambiente — atualizada:** o código foi inicialmente escrito sem acesso ao binário do
-> Godot. Em uma sessão posterior, consegui baixar o Godot (via release do GitHub, já que
+> Godot. Em sessões posteriores, consegui baixar o Godot (via release do GitHub, já que
 > `godotengine.org` está bloqueado pela política de rede, mas `github.com` não) e **rodar de
-> fato** o projeto: importação e os 7 testes automatizados passam sem erro em Godot 4.3.0 e
-> 4.5-stable, com os mesmos resultados calculados à mão ao escrever os testes. A cena principal
-> também roda ~10s em modo headless sem nenhum erro. **O que ainda falta** é só o que exige uma
+> fato** o projeto a cada novo incremento: importação e os 8 testes automatizados passam sem
+> erro em Godot 4.3.0 e 4.5-stable, com os mesmos resultados calculados à mão ao escrever os
+> testes. A cena principal também roda ~10s em modo headless sem nenhum erro. **O que ainda
+> falta** é só o que exige uma
 > tela e um humano de verdade (clique, hover, aparência visual) — modo headless não tem mouse
 > nem monitor. Veja o checklist desse passo final em
 > [`docs/VALIDACAO.md`](docs/VALIDACAO.md#3-checklist-visualmanual--️-ainda-precisa-de-um-humano-com-tela).

@@ -38,6 +38,17 @@ const ROOM_WEAR_MIN_MULTIPLIER: float = 0.5
 const HANDYMAN_WEAR_REDUCTION_PER_TICK: float = 1.0
 const RECEPTIONIST_RISK_MULTIPLIER: float = 0.5
 
+# Parâmetros de fadiga/felicidade de equipe (ver _update_staff_fatigue).
+# Mesmo padrão de "limiar livre" do desgaste de sala: felicidade só começa
+# a cair depois que a fadiga passa de STAFF_HAPPINESS_FATIGUE_THRESHOLD —
+# atendimentos ocasionais não deixam ninguém infeliz, só trabalho sustentado
+# sem descanso.
+const STAFF_FATIGUE_PER_SERVICE: float = 0.1
+const STAFF_FATIGUE_RECOVERY_PER_TICK: float = 0.05
+const STAFF_HAPPINESS_FATIGUE_THRESHOLD: float = 0.5
+const STAFF_HAPPINESS_PENALTY_PER_FATIGUE: float = 0.5
+const STAFF_HAPPINESS_MIN: float = 0.5
+
 func _init(content: Dictionary) -> void:
 	for entry in content.get("diseases", []):
 		var disease := Disease.from_dict(entry)
@@ -155,6 +166,7 @@ func tick() -> void:
 	_assign_waiting_patients()
 	_apply_untreated_risk()
 	_apply_handyman_maintenance()
+	_update_staff_fatigue()
 
 ## Verifica se há ao menos um membro de equipe contratado com o cargo dado,
 ## independente de estar alocado a alguma sala. Usado para efeitos globais
@@ -171,6 +183,29 @@ func _apply_handyman_maintenance() -> void:
 		return
 	for room in placed_rooms.values():
 		room.wear = max(0.0, room.wear - HANDYMAN_WEAR_REDUCTION_PER_TICK)
+
+## Acumula fadiga para quem está, neste tick, atendendo um paciente numa
+## sala alocada a si (sala staffed + occupied); quem está livre descansa e
+## recupera fadiga. Felicidade é derivada da fadiga (ver constantes acima)
+## e reduz a habilidade efetiva em _resolve_treatment — equipe exausta cura
+## menos. Equipe sem sala alocada não acumula nem recupera fadiga (não está
+## trabalhando, neste modelo simplificado).
+func _update_staff_fatigue() -> void:
+	for room in placed_rooms.values():
+		if not room.is_staffed():
+			continue
+		var staff: StaffMember = staff_members.get(room.assigned_staff_id)
+		if staff == null:
+			continue
+		if room.is_occupied():
+			staff.fatigue = min(1.0, staff.fatigue + STAFF_FATIGUE_PER_SERVICE)
+		else:
+			staff.fatigue = max(0.0, staff.fatigue - STAFF_FATIGUE_RECOVERY_PER_TICK)
+		_refresh_staff_happiness(staff)
+
+func _refresh_staff_happiness(staff: StaffMember) -> void:
+	var effective_fatigue: float = max(0.0, staff.fatigue - STAFF_HAPPINESS_FATIGUE_THRESHOLD)
+	staff.happiness = clamp(1.0 - effective_fatigue * STAFF_HAPPINESS_PENALTY_PER_FATIGUE, STAFF_HAPPINESS_MIN, 1.0)
 
 func _resolve_finished_services() -> void:
 	for room in placed_rooms.values():
@@ -231,7 +266,9 @@ func _resolve_treatment(patient: Patient, room: Room) -> void:
 	var disease: Disease = diseases.get(patient.disease_id)
 	var staff: StaffMember = staff_members.get(room.assigned_staff_id)
 	var role: StaffRole = staff_roles.get(staff.role_id) if staff else null
-	var skill: float = role.base_skill if role else 0.5
+	var base_skill: float = role.base_skill if role else 0.5
+	var happiness: float = staff.happiness if staff else 1.0
+	var skill: float = base_skill * happiness
 	var cure_chance: float = clamp(disease.base_cure_chance * (0.5 + skill), 0.0, 1.0) if disease else 0.0
 	cure_chance = clamp(cure_chance * _room_wear_multiplier(room), 0.0, 1.0)
 	room.wear += 1.0

@@ -194,13 +194,24 @@ func _count_staff_with_role(role_id: String) -> int:
 			count += 1
 	return count
 
+## Equipe com felicidade visivelmente reduzida (abaixo de 1.0 — ver
+## HospitalSimulation._refresh_staff_happiness) por trabalho sustentado sem
+## descanso. Só tem sentido olhar para quem está alocado a uma sala: equipe
+## ociosa não acumula fadiga neste modelo.
+func _count_tired_staff() -> int:
+	var count := 0
+	for staff in simulation.staff_members.values():
+		if staff.happiness < 1.0:
+			count += 1
+	return count
+
 func _update_hud() -> void:
 	var definition: RoomDefinition = simulation.room_definitions.get(selected_room_definition_id)
 	var lines := [
 		"Hospital Manager — prototipo (Fase 2)",
 		"Caixa: %d | Reputação: %.2f" % [simulation.economy.cash, simulation.economy.reputation],
 		"Pacientes ativos: %d" % _count_active_patients(),
-		"Equipe — zeladores: %d | recepcionistas: %d" % [_count_staff_with_role("handyman"), _count_staff_with_role("receptionist")],
+		"Equipe — zeladores: %d | recepcionistas: %d | cansados: %d" % [_count_staff_with_role("handyman"), _count_staff_with_role("receptionist"), _count_tired_staff()],
 		"Sala selecionada [1-%d]: %s (custo %d)" % [room_definition_order.size(), definition.display_name if definition else "?", definition.cost if definition else 0],
 		"Clique em área livre constrói; clique numa sala aloca equipe ociosa.",
 		"Q/W/E/R contrata médico/enfermeira/zelador/recepcionista.",

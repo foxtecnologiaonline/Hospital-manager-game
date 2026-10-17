@@ -34,6 +34,7 @@ Saída real obtida (idêntica em 4.3.0 e 4.5-stable):
   [OK] test_handyman_reduces_room_wear
   [OK] test_receptionist_halves_untreated_risk
   [OK] test_find_room_at_and_idle_staff
+  [OK] test_staff_fatigue_and_happiness
 OK — todos os testes passaram.
 ```
 
